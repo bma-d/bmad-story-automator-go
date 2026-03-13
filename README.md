@@ -6,6 +6,8 @@
 
 Portable runtime bundle for BMAD `story-automator-go`. If you do not know what [BMaD](https://github.com/bmad-code-org/BMAD-METHOD) is, you're here to early. Go read their docs, use it for a project or two and come back when you want to try automating the story-loop.
 
+This should be run after the planning phase has finished(After all planning phases, and after running /bmad-bmm-sprint-planning)
+
 ## Quickstart
 
 Clone the repo:
@@ -13,7 +15,7 @@ Clone the repo:
 ```bash
 git clone git@github.com:bma-d/bmad-story-automator-go.git
 cd bmad-story-automator-go
-chmod +x install.sh test-install.sh
+chmod +x install.sh
 ```
 
 Install into a BMAD project:
@@ -22,16 +24,10 @@ Install into a BMAD project:
 ./install.sh /absolute/path/to/your-bmad-project
 ```
 
-Example:
-
 ```bash
-./install.sh /path/to/your-bmad-project
-```
-
-Verify the package:
-
-```bash
-./test-install.sh
+claude --dangerously-skip-permissions
+# inside claude
+/bmad-bmm-story-automator-go
 ```
 
 
@@ -50,7 +46,7 @@ Verify the package:
             Run and wake up full of excitement. I had to go through 6 nights to wake up in excitement only to get my hopes and dreams crushed to an automator that stopped after 1~2 hours. You don't need to do that and I envy you.
         </li>
         <li>
-            It's called `story-automator-go` because there were 2 versions before this, way back when v6 was in alpha, `story-automator` and `story-automator-program`. Both were bash scripts and too many MD files taped together with blood, sweat, tears and shotgunning at 5am. If there's anything I learnt from trying to get this to the current state is, agents + deterministic outputs and instructions with minimal context is fucking awesome. You should try it for your own agent orchestrator / swarm. Maybe I'll share that as well someday. But BMB is also awesome so you might not need it. Step files are GOAT.
+            It's called `story-automator-go` because there were 2 versions before this, way back when v6 was in alpha, `story-automator` and `story-automator-program`. Both were bash scripts and too many MD files taped together with blood, sweat, tears and shotgunning at 5am. If there's anything I learnt from trying to get this to the current state is, agents + deterministic outputs and instructions and minimal context is fucking awesome. You should try it for your own agent orchestrator / swarm. Maybe I'll share that as well someday. But BMB is also awesome so you might not need it. Step files are GOAT.
         </li>
     </ul>
 </details>
@@ -92,18 +88,6 @@ Because of that, this package installs the bundled `code-review` workflow alongs
 
 ## Requirements
 
-Target project must already have:
-- `_bmad/bmm/workflows/4-implementation/create-story/workflow.yaml` or `.md`
-- `_bmad/bmm/workflows/4-implementation/dev-story/workflow.yaml` or `.md`
-- `_bmad/bmm/workflows/4-implementation/retrospective/workflow.yaml` or `.md`
-
-Optional target project file:
-- `_bmad/core/tasks/workflow.xml`
-
-Optional automate workflow:
-- `_bmad/tea/workflows/testarch/automate/workflow.yaml` or `.md`
-- or `_bmad/bmm/workflows/testarch/automate/workflow.yaml` or `.md`
-
 Host requirements:
 - `tmux`
 - Claude Code
@@ -121,10 +105,6 @@ After install:
 ```text
 /bmad-bmm-story-automator-go
 ```
-
-That command runs:
-- `_bmad/core/tasks/workflow.xml` when the project uses the workflow engine
-- `_bmad/bmm/workflows/4-implementation/story-automator-go/workflow.md`
 
 ### Codex
 
@@ -158,20 +138,3 @@ Packaged binaries:
 
 Package scripts:
 - `install.sh`
-- `test-install.sh`
-
-## What Is Intentionally Excluded
-
-- `cmd/`
-- `go.mod`
-- source-only root binaries from the source workflow folder
-- `validation-history.md`
-- `validation-report-*.md`
-- `validation-reports/`
-- planning/archive docs like `workflow-plan*.md`
-
-## Notes For Maintainers
-
-- this repo is a distributable runtime bundle, not the development source repo
-- if you need to rebuild binaries, do that from the source workflow repo that still contains `cmd/story-automator`
-- installer backs up existing target `story-automator-go` and `code-review` folders before replacing them
