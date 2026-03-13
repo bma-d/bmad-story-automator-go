@@ -4,7 +4,7 @@
 
 > Use this to wake up to this.
 
-Portable runtime bundle for BMAD `story-automator-go`. If you do not know what [BMaD](https://github.com/bmad-code-org/BMAD-METHOD) is, you're here to early. Go read their docs, use it for a project or two and come back when you want to try automating the story-loop.
+Portable bundle for BMAD `story-automator-go`. If you do not know what [BMaD](https://github.com/bmad-code-org/BMAD-METHOD) is, you're here to early. Go read their docs, use it for a project or two and come back when you want to try automating the story-loop.
 
 This should be run after the planning phase has finished(After all planning phases, and after running /bmad-bmm-sprint-planning)
 
@@ -53,7 +53,7 @@ claude --dangerously-skip-permissions
 
 ## What This Is
 
-This repo packages the runtime-only parts of `story-automator-go` so another BMAD project can install it without carrying the Go source tree or old validation artifacts.
+This repo packages the installable workflow payload plus the Go program source for `story-automator-go` so another BMAD project can install it cleanly and still inspect or rebuild the binary if needed.
 
 This bundle supports:
 - Claude
@@ -138,3 +138,7 @@ Packaged binaries:
 
 Package scripts:
 - `install.sh`
+
+Bundled program source:
+- `source/go.mod`
+- `source/cmd/story-automator/`
