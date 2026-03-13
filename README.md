@@ -4,30 +4,56 @@
 
 > Use this to wake up to this.
 
-Portable runtime bundle for BMAD `story-automator-go`.
+Portable runtime bundle for BMAD `story-automator-go`. If you do not know what [BMaD](https://github.com/bmad-code-org/BMAD-METHOD) is, you're here to early. Go read their docs, use it for a project or two and come back when you want to try automating the story-loop.
 
 ## Quickstart
+
+Clone the repo:
+
+```bash
+git clone git@github.com:bma-d/bmad-story-automator-go.git
+cd bmad-story-automator-go
+chmod +x install.sh test-install.sh
+```
 
 Install into a BMAD project:
 
 ```bash
-cd /path/to/bmad-story-automator-go
 ./install.sh /absolute/path/to/your-bmad-project
 ```
 
 Example:
 
 ```bash
-cd /path/to/bmad-story-automator-go
 ./install.sh /path/to/your-bmad-project
 ```
 
 Verify the package:
 
 ```bash
-cd /path/to/bmad-story-automator-go
 ./test-install.sh
 ```
+
+
+## Recommendations / expectations / rants
+- This is not a genie, as always, the worse your planning artifacts are, the worse your results will be. I strongly recommend to NOT automate the first epic which is usually project bootstrapping. Start automating after project foundation is sound and you've verified that the agent hasn't sneaked in or ignored random requirements.
+- If you're low on usage, the automator runs quite consistently using sonnet, though recently Claude Code has increased usage so much I simply use Opus for the automator as well.
+- Do not expect this to create bug-free code. The project always has issues after running this, but it does make progress much more easier. After running a full session spanning multiple epics, simply try running the project yourself and do an interactive session addressing issues if they exist. Additionaly, create a file full of feedback, feed it to `create-epics-and-stories` and then run the automator again if you're not bothered to do the interactive mode either.
+- Recommend to skip tests for the first epic(IF you ignored my first point and decide to automate epic 1 as well). 
+- You can be VERY specific during agent customisation and Claude will generate the agents file for you pretty much consistenly. If you want to change things mid-automation, update the agents orchestration file in `_bmad-output/story-automator/agents/`. This will work mid-automation so simply edit and save. The file should be intuitive enough, just don't break the agent structure and don't try to use anything other than claude / codex / false.
+- If you want to start a claude session in the same directory as one that has the story-automator running, run with `export STORY_AUTOMATOR_CHILD=true` to ignore the stop-hook.
+- Complexity estimates are shite. But there's no silver bullet for this imo since it's just a script reading through the ACs and looking for keywords. Open to suggestions on how to make it better.
+<details>
+<summary>The rants</summary>
+    <ul>
+        <li>
+            Run and wake up full of excitement. I had to go through 6 nights to wake up in excitement only to get my hopes and dreams crushed to an automator that stopped after 1~2 hours. You don't need to do that and I envy you.
+        </li>
+        <li>
+            It's called `story-automator-go` because there were 2 versions before this, way back when v6 was in alpha, `story-automator` and `story-automator-program`. Both were bash scripts and too many MD files taped together with blood, sweat, tears and shotgunning at 5am. If there's anything I learnt from trying to get this to the current state is, agents + deterministic outputs and instructions with minimal context is fucking awesome. You should try it for your own agent orchestrator / swarm. Maybe I'll share that as well someday. But BMB is also awesome so you might not need it. Step files are GOAT.
+        </li>
+    </ul>
+</details>
 
 ## What This Is
 
@@ -80,7 +106,7 @@ Optional automate workflow:
 
 Host requirements:
 - `tmux`
-- Claude CLI and/or Codex CLI
+- Claude Code
 - macOS or Linux
 - `amd64` or `arm64`
 
@@ -102,13 +128,7 @@ That command runs:
 
 ### Codex
 
-Codex does not use the Claude slash-command wrapper. Use a direct prompt like:
-
-```text
-Load _bmad/core/tasks/workflow.xml, then execute _bmad/bmm/workflows/4-implementation/story-automator-go/workflow.md exactly as written.
-```
-
-The packaged runtime supports Claude and Codex child sessions during orchestration. Codex-specific monitoring and prompt handling are included. Retrospective sessions still force Claude.
+Do not run the orchestrator using Codex. I have never tried it because Codex does not support hooks which is vital for continuation.
 
 ## How To Verify A Target Install
 
