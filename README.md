@@ -4,25 +4,19 @@
 
 > Use this to wake up to this.
 
-Portable bundle for BMAD `story-automator-go`. If you do not know what [BMaD](https://github.com/bmad-code-org/BMAD-METHOD) is, you're here to early. Go read their docs, use it for a project or two and come back when you want to try automating the story-loop.
+Portable bundle with source for BMAD `story-automator-go`. If you do not know what [BMaD](https://github.com/bmad-code-org/BMAD-METHOD) is, you're here to early. Go read their docs, use it for a project or two and come back when you want to try automating the story-loop.
 
 This should be run after the planning phase has finished(After all planning phases, and after running /bmad-bmm-sprint-planning)
 
 ## Quickstart
 
-Clone the repo:
+Install with `npx`:
 
 ```bash
-git clone git@github.com:bma-d/bmad-story-automator-go.git
-cd bmad-story-automator-go
-chmod +x install.sh
+npx bmad-story-automator-go /absolute/path/to/your-bmad-project
 ```
 
-Install into a BMAD project:
-
-```bash
-./install.sh /absolute/path/to/your-bmad-project
-```
+Then run:
 
 ```bash
 claude --dangerously-skip-permissions
@@ -30,6 +24,8 @@ claude --dangerously-skip-permissions
 /bmad-bmm-story-automator-go
 ```
 
+
+The `npx` command will work after this package is published to npm.
 
 ## Recommendations / expectations / rants
 - This is not a genie, as always, the worse your planning artifacts are, the worse your results will be. I strongly recommend to NOT automate the first epic which is usually project bootstrapping. Start automating after project foundation is sound and you've verified that the agent hasn't sneaked in or ignored random requirements.
@@ -138,7 +134,23 @@ Packaged binaries:
 
 Package scripts:
 - `install.sh`
+- `bin/bmad-story-automator-go`
+- `package.json`
 
 Bundled program source:
 - `source/go.mod`
 - `source/cmd/story-automator/`
+
+## Publish To npm
+
+The repo is now wired for npm distribution.
+
+Publish steps:
+- `npm adduser`
+- `npm publish`
+
+After publish, install into any BMAD project with:
+
+```bash
+npx bmad-story-automator-go /absolute/path/to/your-bmad-project
+```

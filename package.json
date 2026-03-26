@@ -1,0 +1,38 @@
+{
+  "name": "bmad-story-automator-go",
+  "version": "0.1.0",
+  "description": "Install the BMAD story-automator-go workflow bundle into a BMAD project.",
+  "bin": {
+    "bmad-story-automator-go": "bin/bmad-story-automator-go"
+  },
+  "files": [
+    "artifacts/",
+    "bin/",
+    "install.sh",
+    "payload/",
+    "README.md",
+    "ref.png",
+    "source/"
+  ],
+  "scripts": {
+    "pack:dry-run": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bma-d/bmad-story-automator-go.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bma-d/bmad-story-automator-go/issues"
+  },
+  "homepage": "https://github.com/bma-d/bmad-story-automator-go#readme",
+  "keywords": [
+    "bmad",
+    "claude",
+    "codex",
+    "workflow",
+    "automation"
+  ]
+}
