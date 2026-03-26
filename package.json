@@ -1,6 +1,6 @@
 {
   "name": "bmad-story-automator-go",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Install the BMAD story-automator-go workflow bundle into a BMAD project.",
   "bin": {
     "bmad-story-automator-go": "bin/bmad-story-automator-go"

@@ -131,6 +131,24 @@ func cmdEnsureStopHook(args []string) int {
 		return 1
 	}
 
+	// Resolve command binary to absolute path using own executable.
+	// The AI agent inconsistently resolves relative frontmatter paths
+	// (../bin/story-automator) — sometimes relative, sometimes absolute,
+	// sometimes project-relative. Self-resolving via os.Executable()
+	// guarantees a consistent absolute path every time.
+	cmdParts := strings.Fields(commandPath)
+	if len(cmdParts) >= 1 {
+		exe, err := os.Executable()
+		if err == nil {
+			resolved, err := filepath.EvalSymlinks(exe)
+			if err == nil {
+				exe = resolved
+			}
+			cmdParts[0] = exe
+			commandPath = strings.Join(cmdParts, " ")
+		}
+	}
+
 	if err := ensureDir(filepath.Dir(settingsPath)); err != nil {
 		writeJSON(map[string]any{"ok": false, "error": "mkdir_failed"})
 		return 1
@@ -183,13 +201,8 @@ func cmdEnsureStopHook(args []string) int {
 		stopHooks = []any{}
 	}
 
-	// Extract workflow directory from command path for flexible matching
-	workflowDir := ""
-	if idx := strings.Index(commandPath, "/bin/story-automator"); idx >= 0 {
-		workflowDir = commandPath[:idx]
-	}
-
 	exists := false
+	needsPathUpdate := false
 	for _, entry := range stopHooks {
 		entryMap, ok := entry.(map[string]any)
 		if !ok {
@@ -206,9 +219,15 @@ func cmdEnsureStopHook(args []string) int {
 					exists = true
 					break
 				}
-				// Flexible match: same workflow dir + stop-hook
-				if workflowDir != "" && strings.Contains(cmd, workflowDir) && strings.Contains(cmd, "stop-hook") {
+				// Flexible match: any command referencing story-automator stop-hook
+				// regardless of path format (relative, absolute, project-relative).
+				if strings.Contains(cmd, "story-automator") && strings.Contains(cmd, "stop-hook") {
 					exists = true
+					if cmd != commandPath {
+						// Migrate stale path to resolved absolute path in-place.
+						m["command"] = commandPath
+						needsPathUpdate = true
+					}
 					break
 				}
 			}
@@ -218,8 +237,21 @@ func cmdEnsureStopHook(args []string) int {
 		}
 	}
 
-	if exists {
+	if exists && !needsPathUpdate {
 		writeJSON(map[string]any{"ok": true, "changed": false, "reason": "already_configured", "path": settingsPath})
+		return 0
+	}
+
+	if exists && needsPathUpdate {
+		// Path normalized to absolute — write updated settings.
+		// Return changed:false because the hook functionally existed;
+		// no session restart is needed.
+		b, _ := json.MarshalIndent(root, "", "  ")
+		if err := writeFileAtomic(settingsPath, b); err != nil {
+			writeJSON(map[string]any{"ok": false, "error": "write_failed", "path": settingsPath})
+			return 1
+		}
+		writeJSON(map[string]any{"ok": true, "changed": false, "reason": "path_normalized", "path": settingsPath})
 		return 0
 	}
 

@@ -61,7 +61,7 @@ Add this to the target project's `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "_bmad/bmm/workflows/4-implementation/story-automator-go/bin/story-automator stop-hook",
+            "command": "/absolute/path/to/bin/story-automator stop-hook",
             "timeout": 10
           }
         ]
@@ -71,17 +71,17 @@ Add this to the target project's `.claude/settings.json`:
 }
 ```
 
-### Binary Path Must Exist in Target Project
+### Binary Path is Always Absolute
 
-**The stop hook binary path is RELATIVE to the target project root.** This means:
+**The stop hook binary resolves itself to an absolute path via `os.Executable()`.** Regardless of how the caller passes the `--command` argument (relative, project-relative, or absolute), the binary self-resolves and stores a consistent absolute path in settings.json.
 
-1. The binary must physically exist at `{target_project}/_bmad/bmm/workflows/4-implementation/story-automator-go/bin/story-automator`
-2. If BMAD is installed via symlink, the path will still resolve correctly
-3. If BMAD is NOT installed in the target project, the hook will FAIL
+This prevents the inconsistency where the AI agent resolves frontmatter paths differently across sessions, which previously caused repeated hook installations and unnecessary restart loops.
 
-**Session 22 Fix:** When hook fails with "no such file or directory":
+**Migration:** If an existing settings.json contains a relative or project-relative path, `ensure-stop-hook` will normalize it to absolute in-place without triggering a restart (`reason: "path_normalized"`).
+
+**When hook fails with "no such file or directory":**
 - Verify BMAD is installed in the target project
-- Check the path exists: `ls -la _bmad/bmm/workflows/4-implementation/story-automator-go/bin/story-automator`
+- Check the binary exists: `ls -la _bmad/bmm/workflows/4-implementation/story-automator-go/bin/story-automator`
 - Ensure binary is executable: `chmod +x _bmad/bmm/workflows/4-implementation/story-automator-go/bin/story-automator`
 
 ---
