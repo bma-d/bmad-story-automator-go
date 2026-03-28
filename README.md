@@ -65,6 +65,123 @@ This bundle does not support:
 Important:
 - retrospective child runs are Claude-only even if the main orchestration uses Codex elsewhere
 
+## How It Works
+
+### 1. Entry + mode routing
+
+```mermaid
+flowchart TD
+    A["Install into BMAD project<br/>npx bmad-story-automator-go"] --> B["Run /bmad-bmm-story-automator-go in Claude"]
+    B --> C["Load BMAD config<br/>project, output folder, language, state helper"]
+    C --> D{"Mode"}
+    D -->|Create| E["Create flow"]
+    D -->|Resume| F["Resume existing orchestration"]
+    D -->|Validate| G["Validate state integrity"]
+    D -->|Edit| H["Edit orchestration config"]
+    B -.-> Z["bin/story-automator backs parsing, state,<br/>tmux spawning, monitoring, retries, and helpers"]
+```
+
+### 2. Create flow
+
+```mermaid
+flowchart TD
+    A["Step 1: Initialize<br/>verify stop-hook, load rules,<br/>check existing state, check sprint status"] --> B["Step 2: Pre-flight<br/>confirm epic, parse stories,<br/>compute complexity, gather custom instructions"]
+    B --> C["Step 2a: Configure<br/>execution prefs, agent plan,<br/>autonomous start, state document"]
+    C --> D["Step 2b: Finalize<br/>write complexity + agents files,<br/>create marker, begin execution"]
+    D --> E["Step 3: Execute build cycle"]
+    E --> F["Step 3c + Step 4: Complete + Wrap-up<br/>summary, learnings, recommendations,<br/>housekeeping, finalize state, remove marker"]
+```
+
+### 3. Story execution loop
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant O as Orchestrator
+    participant S as State Document
+    participant T as tmux Child Session
+    participant P as Sprint Status
+    participant R as Retrospective Session
+
+    loop For each story
+        O->>T: Spawn create-story session
+        T-->>O: Monitor result
+        O->>S: Mark create-story done
+
+        O->>T: Spawn dev-story session
+        T-->>O: Monitor result
+        O->>S: Mark dev-story done
+
+        opt Skip Automate = false
+            O->>T: Spawn automate session
+            T-->>O: Monitor result
+            O->>S: Mark automate done or skipped
+        end
+
+        loop Code-review cycles until pass or escalation
+            O->>T: Spawn code-review session
+            T->>P: Verify sprint status update
+            P-->>O: done or incomplete
+            alt 0 CRITICAL issues remain
+                O->>S: Mark code-review done
+            else CRITICAL issues remain
+                O->>S: Record retry or escalation state
+            end
+        end
+
+        O->>T: Commit story changes
+        O->>P: Verify story is done
+        P-->>O: done
+        O->>S: Mark story complete
+
+        alt Epic fully complete
+            O->>R: Spawn Claude-only retrospective in YOLO mode
+            R-->>O: complete or skip safely
+            O->>S: Record retrospective status
+        end
+    end
+
+    O->>S: Finalize orchestration and remove marker
+```
+
+### 4. Resume, validate, edit
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant O as Orchestrator
+    participant S as State Document
+    participant P as Sprint Status
+    participant T as tmux Sessions
+
+    O->>S: Load existing orchestration state
+    O->>P: Verify state against sprint status
+    O->>T: Inspect active sessions
+    O-->>S: Present status and resume options
+    O->>S: Continue execution from last safe step
+```
+
+```mermaid
+flowchart TD
+    A["Validate mode"] --> B["Validation Step 1<br/>state integrity, helper contract,<br/>structure + session baseline"]
+    B --> C["Validation Step 2<br/>story progress consistency,<br/>final validation report"]
+```
+
+```mermaid
+flowchart TD
+    A["Edit mode"] --> B["Load current state"]
+    B --> C["Open edit menu"]
+    C --> D["Apply and save changes"]
+    D --> E["Post-edit options<br/>resume, edit again, or stop"]
+```
+
+The practical shape is:
+- one orchestrator session
+- one state document
+- many short-lived tmux child sessions for `create-story`, `dev-story`, `automate`, `code-review`, and `retrospective`
+- deterministic retry + escalation around failures
+- `done` gated by the bundled `code-review` workflow
+
 ## What Gets Installed
 
 The installer copies bundled payload into the target project:
