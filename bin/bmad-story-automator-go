@@ -15,6 +15,7 @@ function printUsage() {
   console.log(`bmad-story-automator-go v${packageJson.version}
 
 Usage:
+  npx bmad-story-automator-go
   npx bmad-story-automator-go <bmad-project-root>
 
 Options:
@@ -38,12 +39,14 @@ if (process.platform === "win32") {
   process.exit(1);
 }
 
-if (args.length !== 1) {
+if (args.length > 1) {
   printUsage();
   process.exit(1);
 }
 
-const result = spawnSync("bash", [installScript, ...args], {
+const targetRoot = args.length === 0 ? process.cwd() : args[0];
+
+const result = spawnSync("bash", [installScript, targetRoot], {
   cwd: rootDir,
   stdio: "inherit"
 });

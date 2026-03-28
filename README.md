@@ -13,7 +13,8 @@ This should be run after the planning phase has finished(After all planning phas
 Install with `npx`:
 
 ```bash
-npx bmad-story-automator-go /absolute/path/to/your-bmad-project
+cd /absolute/path/to/your-bmad-project
+npx bmad-story-automator-go
 ```
 
 Then run:
@@ -24,8 +25,11 @@ claude --dangerously-skip-permissions
 /bmad-bmm-story-automator-go
 ```
 
+Or run from anywhere and pass the target project explicitly:
 
-The `npx` command will work after this package is published to npm.
+```bash
+npx bmad-story-automator-go /absolute/path/to/your-bmad-project
+```
 
 ## Recommendations / expectations / rants
 - This is not a genie, as always, the worse your planning artifacts are, the worse your results will be. I strongly recommend to NOT automate the first epic which is usually project bootstrapping. Start automating after project foundation is sound and you've verified that the agent hasn't sneaked in or ignored random requirements.
@@ -152,5 +156,6 @@ Publish steps:
 After publish, install into any BMAD project with:
 
 ```bash
-npx bmad-story-automator-go /absolute/path/to/your-bmad-project
+cd /absolute/path/to/your-bmad-project
+npx bmad-story-automator-go
 ```
