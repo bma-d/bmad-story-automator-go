@@ -77,20 +77,20 @@ Story ID: STORY_ID" --full-auto
 
 ## code-review (REQUIRED after dev-story)
 
-**MUST use BMAD /code-review workflow. Do NOT use Task agent for reviews.**
+**MUST use the dedicated `story-automator-review` workflow. Do NOT use Task agent for reviews.**
 
 **CRITICAL (v2.0):** Include auto-fix instruction to prevent menu prompts.
 
 **Claude:**
 ```bash
-tmux send-keys -t "SESSION" 'claude --dangerously-skip-permissions "/bmad-bmm-code-review STORY_ID auto-fix all issues without prompting"' Enter
+tmux send-keys -t "SESSION" 'claude --dangerously-skip-permissions "/bmad-bmm-story-automator-review STORY_ID auto-fix all issues without prompting"' Enter
 ```
 
 **Codex (v1.3.0):**
 ```bash
-codex exec "Execute the BMAD code-review workflow for story STORY_ID.
+codex exec "Execute the story-automator review workflow for story STORY_ID.
 
-Workflow location: _bmad/bmm/workflows/4-implementation/code-review/
+Workflow location: _bmad/bmm/workflows/4-implementation/story-automator-review/
 Story file: _bmad-output/implementation-artifacts/STORY_PREFIX-*.md
 Review implementation, find issues, fix them automatically.
 auto-fix all issues without prompting
@@ -98,7 +98,7 @@ auto-fix all issues without prompting
 Story ID: STORY_ID" --full-auto
 ```
 
-**Why `auto-fix all issues without prompting`:** The code-review workflow normally presents a findings menu. This instruction tells it to automatically fix issues without prompting.
+**Why `auto-fix all issues without prompting`:** The dedicated review workflow normally presents a findings menu. This instruction tells it to automatically fix issues without prompting.
 
 ---
 

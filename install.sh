@@ -10,7 +10,7 @@ Usage: ./install.sh <bmad-project-root>
 
 Installs the portable payload bundle into:
   _bmad/bmm/workflows/4-implementation/story-automator-go
-  _bmad/bmm/workflows/4-implementation/code-review
+  _bmad/bmm/workflows/4-implementation/story-automator-review
 
 Also ensures Claude command wrappers exist in:
   .claude/commands
@@ -135,18 +135,18 @@ fi
 TARGET_ROOT="$(resolve_abs_dir "$1")"
 TARGET_BMAD="$TARGET_ROOT/_bmad"
 TARGET_WORKFLOW="$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/story-automator-go"
-TARGET_CODE_REVIEW="$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/code-review"
+TARGET_STORY_REVIEW="$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/story-automator-review"
 TARGET_COMMANDS="$TARGET_ROOT/.claude/commands"
 PLATFORM="$(detect_platform)"
 PAYLOAD_ROOT="$SCRIPT_DIR/payload"
 STORY_PAYLOAD="$PAYLOAD_ROOT/_bmad/bmm/workflows/4-implementation/story-automator-go"
-CODE_REVIEW_PAYLOAD="$PAYLOAD_ROOT/_bmad/bmm/workflows/4-implementation/code-review"
+STORY_REVIEW_PAYLOAD="$PAYLOAD_ROOT/_bmad/bmm/workflows/4-implementation/story-automator-review"
 SOURCE_BINARY="$SCRIPT_DIR/artifacts/story-automator/bin/$PLATFORM/story-automator"
 
 [ -d "$TARGET_BMAD" ] || err "Target is not a BMAD project: missing $TARGET_BMAD"
 [ -d "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation" ] || err "Missing implementation workflows directory"
 [ -d "$STORY_PAYLOAD" ] || err "Missing story-automator-go payload: $STORY_PAYLOAD"
-[ -d "$CODE_REVIEW_PAYLOAD" ] || err "Missing code-review payload: $CODE_REVIEW_PAYLOAD"
+[ -d "$STORY_REVIEW_PAYLOAD" ] || err "Missing story-automator-review payload: $STORY_REVIEW_PAYLOAD"
 [ -f "$SOURCE_BINARY" ] || err "Missing packaged binary for $PLATFORM: $SOURCE_BINARY"
 
 COMMAND_MODE="direct"
@@ -179,10 +179,10 @@ else
 fi
 
 backup_if_exists "$TARGET_WORKFLOW"
-backup_if_exists "$TARGET_CODE_REVIEW"
+backup_if_exists "$TARGET_STORY_REVIEW"
 
 cp -a "$STORY_PAYLOAD" "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/"
-cp -a "$CODE_REVIEW_PAYLOAD" "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/"
+cp -a "$STORY_REVIEW_PAYLOAD" "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/"
 cp -a "$SCRIPT_DIR/README.md" "$TARGET_WORKFLOW/README.md"
 
 mkdir -p "$TARGET_WORKFLOW/bin"
@@ -210,10 +210,10 @@ ensure_command_if_missing \
   "$DEV_STORY_PATH"
 
 ensure_command_if_missing \
-  "$TARGET_COMMANDS/bmad-bmm-code-review.md" \
-  "code-review" \
-  "Perform an adversarial senior developer code review and fix issues through the BMAD workflow." \
-  "_bmad/bmm/workflows/4-implementation/code-review/workflow.yaml"
+  "$TARGET_COMMANDS/bmad-bmm-story-automator-review.md" \
+  "story-automator-review" \
+  "Run the dedicated non-interactive review workflow used by story-automator-go sessions." \
+  "_bmad/bmm/workflows/4-implementation/story-automator-review/workflow.yaml"
 
 ensure_command_if_missing \
   "$TARGET_COMMANDS/bmad-bmm-retrospective.md" \
@@ -230,7 +230,7 @@ if [ -n "$OPTIONAL_AUTOMATE_PATH" ]; then
 fi
 
 echo "Installed story-automator-go into: $TARGET_WORKFLOW"
-echo "Installed bundled code-review into: $TARGET_CODE_REVIEW"
+echo "Installed bundled story-automator-review into: $TARGET_STORY_REVIEW"
 echo "Installed binary: $PLATFORM"
 echo "Command mode: $COMMAND_MODE"
 echo "Installed Claude command: $TARGET_COMMANDS/bmad-bmm-story-automator-go.md"

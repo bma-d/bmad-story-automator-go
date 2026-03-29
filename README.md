@@ -180,28 +180,28 @@ The practical shape is:
 - one state document
 - many short-lived tmux child sessions for `create-story`, `dev-story`, `automate`, `code-review`, and `retrospective`
 - deterministic retry + escalation around failures
-- `done` gated by the bundled `code-review` workflow
+- `done` gated by the bundled `story-automator-review` workflow
 
 ## What Gets Installed
 
 The installer copies bundled payload into the target project:
 - `_bmad/bmm/workflows/4-implementation/story-automator-go`
-- `_bmad/bmm/workflows/4-implementation/code-review`
+- `_bmad/bmm/workflows/4-implementation/story-automator-review`
 
 It also:
 - installs the correct platform binary as `bin/story-automator`
 - installs the Claude command `bmad-bmm-story-automator-go`
-- creates missing Claude dependency commands for `create-story`, `dev-story`, `code-review`, `retrospective`
+- creates missing Claude dependency commands for `create-story`, `dev-story`, `story-automator-review`, `retrospective`
 - creates `bmad-tea-testarch-automate` only if a compatible automate workflow already exists in the target project
 
-## Why Code Review Is Bundled
+## Why Story Automator Review Is Bundled
 
-`story-automator-go` now depends on the updated `code-review` workflow state gate.
+`story-automator-go` now depends on a dedicated `story-automator-review` workflow state gate.
 
 Critical rule:
 - a story should move to `done` only when **zero CRITICAL issues remain after fixes**
 
-Because of that, this package installs the bundled `code-review` workflow alongside `story-automator-go`. If the target project keeps an older review workflow, the automator can incorrectly move stories to `done`.
+Because of that, this package installs the bundled `story-automator-review` workflow alongside `story-automator-go`. It does not overwrite the project's generic `code-review` workflow.
 
 ## Requirements
 
@@ -234,18 +234,18 @@ Manual checks inside a target project:
 ```bash
 cd /path/to/project
 _bmad/bmm/workflows/4-implementation/story-automator-go/scripts/derive-project-slug.sh
-grep -n "0 CRITICAL issues remain after fixes" _bmad/bmm/workflows/4-implementation/code-review/instructions.xml
+grep -n "0 CRITICAL issues remain after fixes" _bmad/bmm/workflows/4-implementation/story-automator-review/instructions.xml
 ```
 
 Expected:
 - JSON containing `"ok": true`
-- a matching `CRITICAL issues remain` line in `code-review/instructions.xml`
+- a matching `CRITICAL issues remain` line in `story-automator-review/instructions.xml`
 
 ## Package Layout
 
 Payload copied into target projects:
 - `payload/_bmad/bmm/workflows/4-implementation/story-automator-go/`
-- `payload/_bmad/bmm/workflows/4-implementation/code-review/`
+- `payload/_bmad/bmm/workflows/4-implementation/story-automator-review/`
 
 Packaged binaries:
 - `artifacts/story-automator/bin/darwin-arm64/story-automator`

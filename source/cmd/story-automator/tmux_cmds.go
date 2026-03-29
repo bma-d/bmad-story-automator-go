@@ -305,9 +305,9 @@ func tmuxWrapperBuildCmd(args []string) int {
 			workflowCmd = "/bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
 		case "review":
 			if extra != "" {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " " + extra
+				workflowCmd = "/bmad-bmm-story-automator-review " + storyID + " " + extra
 			} else {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " auto-fix all issues without prompting"
+				workflowCmd = "/bmad-bmm-story-automator-review " + storyID + " auto-fix all issues without prompting"
 			}
 		default:
 			fmt.Fprintln(os.Stderr, "Unknown step type: "+step)
@@ -329,9 +329,9 @@ func tmuxWrapperBuildCmd(args []string) int {
 			workflowCmd = "/bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
 		case "review":
 			if extra != "" {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " " + extra
+				workflowCmd = "/bmad-bmm-story-automator-review " + storyID + " " + extra
 			} else {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " auto-fix all issues without prompting"
+				workflowCmd = "/bmad-bmm-story-automator-review " + storyID + " auto-fix all issues without prompting"
 			}
 		default:
 			fmt.Fprintln(os.Stderr, "Unknown step type: "+step)
@@ -378,11 +378,11 @@ func tmuxWrapperBuildCmd(args []string) int {
 		if reviewExtra == "" {
 			reviewExtra = "auto-fix all issues without prompting"
 		}
-		prompt = "Execute the BMAD code-review workflow for story " + storyID + ".\n\n" +
-			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/code-review/workflow.yaml\n" +
+		prompt = "Execute the story-automator review workflow for story " + storyID + ".\n\n" +
+			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/story-automator-review/workflow.yaml\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/workflows/4-implementation/code-review/instructions.xml for detailed steps\n" +
-			"- _bmad/bmm/workflows/4-implementation/code-review/checklist.md for validation\n\n" +
+			"- _bmad/bmm/workflows/4-implementation/story-automator-review/instructions.xml for detailed steps\n" +
+			"- _bmad/bmm/workflows/4-implementation/story-automator-review/checklist.md for validation\n\n" +
 			"Story file: _bmad-output/implementation-artifacts/" + storyPrefix + "-*.md\n" +
 			"Review implementation, find issues, fix them automatically.\n" +
 			reviewExtra + "\n\n" +
