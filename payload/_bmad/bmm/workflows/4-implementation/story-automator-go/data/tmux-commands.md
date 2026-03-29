@@ -113,7 +113,7 @@ The status check script automatically detects Claude vs Codex sessions:
 
 **For full output (when completed/stuck):**
 ```bash
-./bin/story-automator tmux-status-check "SESSION_NAME" --full
+{project_root}/_bmad/bmm/workflows/4-implementation/story-automator-go/bin/story-automator tmux-status-check "SESSION_NAME" --full
 ```
 Returns: `idle,0,0,/tmp/sa-output-SESSION_NAME.txt,0,completed`
 

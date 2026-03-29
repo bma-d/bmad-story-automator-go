@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -40,17 +41,23 @@ type tmuxStatus struct {
 
 func cmdTmuxWrapper(args []string) int {
 	if len(args) == 0 {
-		return tmuxWrapperUsage()
+		return tmuxWrapperUsage(os.Stderr, 1)
+	}
+	if isHelpFlag(args[0]) {
+		return tmuxWrapperUsage(os.Stdout, 0)
 	}
 	action := args[0]
 	args = args[1:]
 
 	switch action {
 	case "spawn":
+		if len(args) > 0 && isHelpFlag(args[0]) {
+			return tmuxWrapperUsage(os.Stdout, 0)
+		}
 		return tmuxWrapperSpawn(args)
 	case "name":
 		if len(args) < 3 {
-			return tmuxWrapperUsage()
+			return tmuxWrapperUsage(os.Stderr, 1)
 		}
 		step := args[0]
 		epic := args[1]
@@ -71,7 +78,7 @@ func cmdTmuxWrapper(args []string) int {
 		return 0
 	case "kill":
 		if len(args) < 1 {
-			return tmuxWrapperUsage()
+			return tmuxWrapperUsage(os.Stderr, 1)
 		}
 		tmuxKillSession(args[0])
 		return 0
@@ -88,7 +95,7 @@ func cmdTmuxWrapper(args []string) int {
 		return 0
 	case "exists":
 		if len(args) < 1 {
-			return tmuxWrapperUsage()
+			return tmuxWrapperUsage(os.Stderr, 1)
 		}
 		if tmuxHasSession(args[0]) {
 			fmt.Println("true")
@@ -97,6 +104,9 @@ func cmdTmuxWrapper(args []string) int {
 		fmt.Println("false")
 		return 1
 	case "build-cmd":
+		if len(args) > 0 && isHelpFlag(args[0]) {
+			return tmuxWrapperUsage(os.Stdout, 0)
+		}
 		return tmuxWrapperBuildCmd(args)
 	case "project-slug":
 		fmt.Println(getProjectSlug())
@@ -106,7 +116,7 @@ func cmdTmuxWrapper(args []string) int {
 		return 0
 	case "story-suffix":
 		if len(args) < 1 {
-			return tmuxWrapperUsage()
+			return tmuxWrapperUsage(os.Stderr, 1)
 		}
 		fmt.Println(strings.ReplaceAll(args[0], ".", "-"))
 		return 0
@@ -120,33 +130,33 @@ func cmdTmuxWrapper(args []string) int {
 		fmt.Println(getSkillPrefix(getAgentType()))
 		return 0
 	default:
-		return tmuxWrapperUsage()
+		return tmuxWrapperUsage(os.Stderr, 1)
 	}
 }
 
-func tmuxWrapperUsage() int {
-	fmt.Fprintln(os.Stderr, "Usage: tmux-wrapper <action> [args...]")
-	fmt.Fprintln(os.Stderr, "")
-	fmt.Fprintln(os.Stderr, "Actions:")
-	fmt.Fprintln(os.Stderr, "  spawn <step> <epic> <story_id> [--command \"...\"] [--cycle N] [--agent TYPE]")
-	fmt.Fprintln(os.Stderr, "  name <step> <epic> <story_id> [--cycle N]")
-	fmt.Fprintln(os.Stderr, "  list [--project-only]")
-	fmt.Fprintln(os.Stderr, "  kill <session_name>")
-	fmt.Fprintln(os.Stderr, "  kill-all [--project-only]")
-	fmt.Fprintln(os.Stderr, "  exists <session_name>")
-	fmt.Fprintln(os.Stderr, "  build-cmd <step> <story_id> [--agent TYPE] [extra_instruction]")
-	fmt.Fprintln(os.Stderr, "  project-slug")
-	fmt.Fprintln(os.Stderr, "  project-hash")
-	fmt.Fprintln(os.Stderr, "  story-suffix <story_id>")
-	fmt.Fprintln(os.Stderr, "  agent-type")
-	fmt.Fprintln(os.Stderr, "  agent-cli")
-	fmt.Fprintln(os.Stderr, "  skill-prefix")
-	return 1
+func tmuxWrapperUsage(w io.Writer, code int) int {
+	fmt.Fprintln(w, "Usage: tmux-wrapper <action> [args...]")
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "Actions:")
+	fmt.Fprintln(w, "  spawn <step> <epic> <story_id> [--command \"...\"] [--cycle N] [--agent TYPE]")
+	fmt.Fprintln(w, "  name <step> <epic> <story_id> [--cycle N]")
+	fmt.Fprintln(w, "  list [--project-only]")
+	fmt.Fprintln(w, "  kill <session_name>")
+	fmt.Fprintln(w, "  kill-all [--project-only]")
+	fmt.Fprintln(w, "  exists <session_name>")
+	fmt.Fprintln(w, "  build-cmd <step> <story_id> [--agent TYPE] [extra_instruction]")
+	fmt.Fprintln(w, "  project-slug")
+	fmt.Fprintln(w, "  project-hash")
+	fmt.Fprintln(w, "  story-suffix <story_id>")
+	fmt.Fprintln(w, "  agent-type")
+	fmt.Fprintln(w, "  agent-cli")
+	fmt.Fprintln(w, "  skill-prefix")
+	return code
 }
 
 func tmuxWrapperSpawn(args []string) int {
 	if len(args) < 3 {
-		return tmuxWrapperUsage()
+		return tmuxWrapperUsage(os.Stderr, 1)
 	}
 	step := args[0]
 	epic := args[1]
@@ -216,7 +226,7 @@ func tmuxWrapperSpawn(args []string) int {
 
 func tmuxWrapperBuildCmd(args []string) int {
 	if len(args) < 2 {
-		return tmuxWrapperUsage()
+		return tmuxWrapperUsage(os.Stderr, 1)
 	}
 	step := args[0]
 	storyID := args[1]
@@ -246,7 +256,7 @@ func tmuxWrapperBuildCmd(args []string) int {
 
 	if step == "retro" && agent != "codex" {
 		epicNumber := storyID
-		retroPrompt := "/bmad-bmm-retrospective epic:" + epicNumber + "\n\n" +
+		retroPrompt := "bmad-retrospective epic:" + epicNumber + "\n\n" +
 			"Run the retrospective in #YOLO mode.\n" +
 			"Assume the user will NOT provide any input to the retrospective directly.\n" +
 			"For ALL prompts that expect user input, make reasonable autonomous decisions based on:\n" +
@@ -288,16 +298,16 @@ func tmuxWrapperBuildCmd(args []string) int {
 		workflowCmd := ""
 		switch step {
 		case "create":
-			workflowCmd = "/bmad-bmm-create-story " + storyID + " #YOLO"
+			workflowCmd = "bmad-create-story " + storyID + " #YOLO"
 		case "dev":
-			workflowCmd = "/bmad-bmm-dev-story " + storyID + " #YOLO"
+			workflowCmd = "bmad-dev-story " + storyID + " #YOLO"
 		case "auto":
-			workflowCmd = "/bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
+			workflowCmd = "bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
 		case "review":
 			if extra != "" {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " " + extra
+				workflowCmd = "bmad-story-automator-review " + storyID + " " + extra
 			} else {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " auto-fix all issues without prompting"
+				workflowCmd = "bmad-story-automator-review " + storyID + " auto-fix all issues without prompting"
 			}
 		default:
 			fmt.Fprintln(os.Stderr, "Unknown step type: "+step)
@@ -312,16 +322,16 @@ func tmuxWrapperBuildCmd(args []string) int {
 		workflowCmd := ""
 		switch step {
 		case "create":
-			workflowCmd = "/bmad-bmm-create-story " + storyID + " #YOLO"
+			workflowCmd = "bmad-create-story " + storyID + " #YOLO"
 		case "dev":
-			workflowCmd = "/bmad-bmm-dev-story " + storyID + " #YOLO"
+			workflowCmd = "bmad-dev-story " + storyID + " #YOLO"
 		case "auto":
-			workflowCmd = "/bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
+			workflowCmd = "bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
 		case "review":
 			if extra != "" {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " " + extra
+				workflowCmd = "bmad-story-automator-review " + storyID + " " + extra
 			} else {
-				workflowCmd = "/bmad-bmm-code-review " + storyID + " auto-fix all issues without prompting"
+				workflowCmd = "bmad-story-automator-review " + storyID + " auto-fix all issues without prompting"
 			}
 		default:
 			fmt.Fprintln(os.Stderr, "Unknown step type: "+step)
@@ -335,20 +345,20 @@ func tmuxWrapperBuildCmd(args []string) int {
 	switch step {
 	case "create":
 		prompt = "Execute the BMAD create-story workflow for story " + storyID + ".\n\n" +
-			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/create-story/workflow.yaml\n" +
+			"READ this skill first: _bmad/bmm/4-implementation/bmad-create-story/SKILL.md\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/workflows/4-implementation/create-story/instructions.xml for detailed steps\n" +
-			"- _bmad/bmm/workflows/4-implementation/create-story/template.md as the output template\n" +
-			"- _bmad/bmm/workflows/4-implementation/create-story/checklist.md for validation\n\n" +
+			"- _bmad/bmm/4-implementation/bmad-create-story/workflow.md for the structured flow\n" +
+			"- _bmad/bmm/4-implementation/bmad-create-story/template.md as the output template\n" +
+			"- _bmad/bmm/4-implementation/bmad-create-story/checklist.md for validation\n\n" +
 			"Create story file at: _bmad-output/implementation-artifacts/" + storyPrefix + "-*.md\n\n" +
 			"Story ID: " + storyID + "\n\n" +
 			"#YOLO - Do NOT wait for user input. Make autonomous decisions throughout."
 	case "dev":
 		prompt = "Execute the BMAD dev-story workflow for story " + storyID + ".\n\n" +
-			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/dev-story/workflow.md\n" +
+			"READ this skill first: _bmad/bmm/4-implementation/bmad-dev-story/SKILL.md\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/workflows/4-implementation/dev-story/instructions.xml for detailed steps\n" +
-			"- _bmad/bmm/workflows/4-implementation/dev-story/checklist.md for validation\n\n" +
+			"- _bmad/bmm/4-implementation/bmad-dev-story/workflow.md for the structured flow\n" +
+			"- _bmad/bmm/4-implementation/bmad-dev-story/checklist.md for validation\n\n" +
 			"Story file: _bmad-output/implementation-artifacts/" + storyPrefix + "-*.md\n" +
 			"Implement all tasks marked [ ]. Run tests. Update checkboxes.\n\n" +
 			"Story ID: " + storyID + "\n\n" +
@@ -368,11 +378,12 @@ func tmuxWrapperBuildCmd(args []string) int {
 		if reviewExtra == "" {
 			reviewExtra = "auto-fix all issues without prompting"
 		}
-		prompt = "Execute the BMAD code-review workflow for story " + storyID + ".\n\n" +
-			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/code-review/workflow.yaml\n" +
+		prompt = "Execute the story-automator review workflow for story " + storyID + ".\n\n" +
+			"READ this skill first: _bmad/bmm/4-implementation/bmad-story-automator-review/SKILL.md\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/workflows/4-implementation/code-review/instructions.xml for detailed steps\n" +
-			"- _bmad/bmm/workflows/4-implementation/code-review/checklist.md for validation\n\n" +
+			"- _bmad/bmm/4-implementation/bmad-story-automator-review/workflow.yaml for config\n" +
+			"- _bmad/bmm/4-implementation/bmad-story-automator-review/instructions.xml for detailed steps\n" +
+			"- _bmad/bmm/4-implementation/bmad-story-automator-review/checklist.md for validation\n\n" +
 			"Story file: _bmad-output/implementation-artifacts/" + storyPrefix + "-*.md\n" +
 			"Review implementation, find issues, fix them automatically.\n" +
 			reviewExtra + "\n\n" +
@@ -380,9 +391,9 @@ func tmuxWrapperBuildCmd(args []string) int {
 	case "retro":
 		epicNumber := storyID
 		prompt = "Execute the BMAD retrospective workflow for epic " + epicNumber + ".\n\n" +
-			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/retrospective/workflow.yaml\n" +
+			"READ this skill first: _bmad/bmm/4-implementation/bmad-retrospective/SKILL.md\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/workflows/4-implementation/retrospective/instructions.md for detailed steps\n\n" +
+			"- _bmad/bmm/4-implementation/bmad-retrospective/workflow.md for the structured flow\n\n" +
 			"Run the retrospective in #YOLO mode.\n" +
 			"Assume the user will NOT provide any input.\n" +
 			"For ALL prompts that expect user input, make reasonable autonomous decisions based on:\n" +
@@ -927,6 +938,11 @@ func cmdMonitorSession(args []string) int {
 		fmt.Fprintln(os.Stderr, "Usage: monitor-session <session_name> [options]")
 		return 1
 	}
+	if isHelpFlag(args[0]) {
+		fmt.Println("Usage: monitor-session <session_name> [options]")
+		fmt.Println("Options: --max-polls N --initial-wait N --project-root PATH --timeout MIN --verbose --json --agent TYPE --workflow TYPE --story-key KEY")
+		return 0
+	}
 
 	sessionName := ""
 	maxPolls := 30
@@ -1297,7 +1313,7 @@ func getSkillPrefix(agent string) string {
 	if agent == "codex" {
 		return "none"
 	}
-	return "/bmad-bmm-"
+	return "bmad-"
 }
 
 func detectCodexSession(session, capture string) string {
