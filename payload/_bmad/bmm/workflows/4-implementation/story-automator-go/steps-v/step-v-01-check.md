@@ -45,7 +45,7 @@ Enter filename or number to select:
 **Wait.**
 
 ### 3. Load and Parse State
-Load the selected state document (resolved as `{outputFile}` for this run). Extract frontmatter:
+Load the selected state document (resolved as `{state_path}` for this run). Extract frontmatter:
 - `epic`, `epicName`, `storyRange`
 - `status`, `currentStory`, `currentStep`
 - `stepsCompleted`, `lastUpdated`

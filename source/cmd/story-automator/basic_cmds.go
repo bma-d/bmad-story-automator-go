@@ -11,6 +11,11 @@ import (
 )
 
 func cmdDeriveProjectSlug(args []string) int {
+	if len(args) > 0 && isHelpFlag(args[0]) {
+		fmt.Fprintln(os.Stdout, "Usage: derive-project-slug [--project-root PATH]")
+		return 0
+	}
+
 	projectRoot := getPWD()
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
@@ -334,7 +339,7 @@ func cmdStopHook(_ []string) int {
 		return 0
 	}
 
-	reason := fmt.Sprintf("Story Automator active (%d stories remaining). Read _bmad/bmm/4-implementation/bmad-story-automator-go/data/stop-hook-recovery.md", storiesRemaining)
+	reason := fmt.Sprintf("Story Automator active (%d stories remaining). Read _bmad/bmm/workflows/4-implementation/story-automator-go/data/stop-hook-recovery.md", storiesRemaining)
 	fmt.Printf("{\n  \"decision\": \"block\",\n  \"reason\": %q\n}\n", reason)
 	return 0
 }
@@ -413,6 +418,11 @@ func cmdCommitStory(args []string) int {
 }
 
 func cmdListSessions(args []string) int {
+	if len(args) > 0 && isHelpFlag(args[0]) {
+		fmt.Fprintln(os.Stdout, "Usage: list-sessions --slug SLUG")
+		return 0
+	}
+
 	slug := ""
 	for i := 0; i < len(args); i++ {
 		switch args[i] {

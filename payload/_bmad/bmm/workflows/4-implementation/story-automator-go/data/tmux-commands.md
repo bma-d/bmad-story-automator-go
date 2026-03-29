@@ -177,7 +177,7 @@ tmux capture-pane -t "SESSION" -p -S -100   # Raw capture (use sparingly)
 | Variable | Claude | Codex |
 |----------|--------|-------|
 | CLI | `claude --dangerously-skip-permissions` | `codex exec --full-auto` |
-| Prompt Style | `/bmad-bmb-workflow` command | Natural language |
+| Prompt Style | `/bmad-bmm-workflow` command | Natural language |
 | Timeout Multiplier | 1x (60min) | 1.5x (90min) |
 | Todo Tracking | ☒/☐ checkboxes | Not supported |
 

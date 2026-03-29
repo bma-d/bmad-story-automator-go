@@ -509,6 +509,11 @@ func cmdStateMetrics(args []string) int {
 }
 
 func cmdValidateState(args []string) int {
+	if len(args) > 0 && isHelpFlag(args[0]) {
+		fmt.Fprintln(os.Stdout, "Usage: validate-state --state PATH")
+		return 0
+	}
+
 	stateFile := ""
 	for i := 0; i < len(args); i++ {
 		switch args[i] {

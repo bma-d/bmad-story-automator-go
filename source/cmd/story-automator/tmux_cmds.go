@@ -256,7 +256,7 @@ func tmuxWrapperBuildCmd(args []string) int {
 
 	if step == "retro" && agent != "codex" {
 		epicNumber := storyID
-		retroPrompt := "bmad-retrospective epic:" + epicNumber + "\n\n" +
+		retroPrompt := "/bmad-bmm-retrospective " + epicNumber + "\n\n" +
 			"Run the retrospective in #YOLO mode.\n" +
 			"Assume the user will NOT provide any input to the retrospective directly.\n" +
 			"For ALL prompts that expect user input, make reasonable autonomous decisions based on:\n" +
@@ -298,16 +298,16 @@ func tmuxWrapperBuildCmd(args []string) int {
 		workflowCmd := ""
 		switch step {
 		case "create":
-			workflowCmd = "bmad-create-story " + storyID + " #YOLO"
+			workflowCmd = "/bmad-bmm-create-story " + storyID + " #YOLO"
 		case "dev":
-			workflowCmd = "bmad-dev-story " + storyID + " #YOLO"
+			workflowCmd = "/bmad-bmm-dev-story " + storyID + " #YOLO"
 		case "auto":
-			workflowCmd = "bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
+			workflowCmd = "/bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
 		case "review":
 			if extra != "" {
-				workflowCmd = "bmad-story-automator-review " + storyID + " " + extra
+				workflowCmd = "/bmad-bmm-code-review " + storyID + " " + extra
 			} else {
-				workflowCmd = "bmad-story-automator-review " + storyID + " auto-fix all issues without prompting"
+				workflowCmd = "/bmad-bmm-code-review " + storyID + " auto-fix all issues without prompting"
 			}
 		default:
 			fmt.Fprintln(os.Stderr, "Unknown step type: "+step)
@@ -322,16 +322,16 @@ func tmuxWrapperBuildCmd(args []string) int {
 		workflowCmd := ""
 		switch step {
 		case "create":
-			workflowCmd = "bmad-create-story " + storyID + " #YOLO"
+			workflowCmd = "/bmad-bmm-create-story " + storyID + " #YOLO"
 		case "dev":
-			workflowCmd = "bmad-dev-story " + storyID + " #YOLO"
+			workflowCmd = "/bmad-bmm-dev-story " + storyID + " #YOLO"
 		case "auto":
-			workflowCmd = "bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
+			workflowCmd = "/bmad-tea-testarch-automate " + storyID + " auto-apply all discovered gaps in tests"
 		case "review":
 			if extra != "" {
-				workflowCmd = "bmad-story-automator-review " + storyID + " " + extra
+				workflowCmd = "/bmad-bmm-code-review " + storyID + " " + extra
 			} else {
-				workflowCmd = "bmad-story-automator-review " + storyID + " auto-fix all issues without prompting"
+				workflowCmd = "/bmad-bmm-code-review " + storyID + " auto-fix all issues without prompting"
 			}
 		default:
 			fmt.Fprintln(os.Stderr, "Unknown step type: "+step)
@@ -345,20 +345,20 @@ func tmuxWrapperBuildCmd(args []string) int {
 	switch step {
 	case "create":
 		prompt = "Execute the BMAD create-story workflow for story " + storyID + ".\n\n" +
-			"READ this skill first: _bmad/bmm/4-implementation/bmad-create-story/SKILL.md\n" +
+			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/create-story/workflow.yaml\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/4-implementation/bmad-create-story/workflow.md for the structured flow\n" +
-			"- _bmad/bmm/4-implementation/bmad-create-story/template.md as the output template\n" +
-			"- _bmad/bmm/4-implementation/bmad-create-story/checklist.md for validation\n\n" +
+			"- _bmad/bmm/workflows/4-implementation/create-story/instructions.xml for detailed steps\n" +
+			"- _bmad/bmm/workflows/4-implementation/create-story/template.md as the output template\n" +
+			"- _bmad/bmm/workflows/4-implementation/create-story/checklist.md for validation\n\n" +
 			"Create story file at: _bmad-output/implementation-artifacts/" + storyPrefix + "-*.md\n\n" +
 			"Story ID: " + storyID + "\n\n" +
 			"#YOLO - Do NOT wait for user input. Make autonomous decisions throughout."
 	case "dev":
 		prompt = "Execute the BMAD dev-story workflow for story " + storyID + ".\n\n" +
-			"READ this skill first: _bmad/bmm/4-implementation/bmad-dev-story/SKILL.md\n" +
+			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/dev-story/workflow.md\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/4-implementation/bmad-dev-story/workflow.md for the structured flow\n" +
-			"- _bmad/bmm/4-implementation/bmad-dev-story/checklist.md for validation\n\n" +
+			"- _bmad/bmm/workflows/4-implementation/dev-story/instructions.xml for detailed steps\n" +
+			"- _bmad/bmm/workflows/4-implementation/dev-story/checklist.md for validation\n\n" +
 			"Story file: _bmad-output/implementation-artifacts/" + storyPrefix + "-*.md\n" +
 			"Implement all tasks marked [ ]. Run tests. Update checkboxes.\n\n" +
 			"Story ID: " + storyID + "\n\n" +
@@ -378,12 +378,11 @@ func tmuxWrapperBuildCmd(args []string) int {
 		if reviewExtra == "" {
 			reviewExtra = "auto-fix all issues without prompting"
 		}
-		prompt = "Execute the story-automator review workflow for story " + storyID + ".\n\n" +
-			"READ this skill first: _bmad/bmm/4-implementation/bmad-story-automator-review/SKILL.md\n" +
+		prompt = "Execute the BMAD code-review workflow for story " + storyID + ".\n\n" +
+			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/code-review/workflow.yaml\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/4-implementation/bmad-story-automator-review/workflow.yaml for config\n" +
-			"- _bmad/bmm/4-implementation/bmad-story-automator-review/instructions.xml for detailed steps\n" +
-			"- _bmad/bmm/4-implementation/bmad-story-automator-review/checklist.md for validation\n\n" +
+			"- _bmad/bmm/workflows/4-implementation/code-review/instructions.xml for detailed steps\n" +
+			"- _bmad/bmm/workflows/4-implementation/code-review/checklist.md for validation\n\n" +
 			"Story file: _bmad-output/implementation-artifacts/" + storyPrefix + "-*.md\n" +
 			"Review implementation, find issues, fix them automatically.\n" +
 			reviewExtra + "\n\n" +
@@ -391,9 +390,9 @@ func tmuxWrapperBuildCmd(args []string) int {
 	case "retro":
 		epicNumber := storyID
 		prompt = "Execute the BMAD retrospective workflow for epic " + epicNumber + ".\n\n" +
-			"READ this skill first: _bmad/bmm/4-implementation/bmad-retrospective/SKILL.md\n" +
+			"READ this workflow file first: _bmad/bmm/workflows/4-implementation/retrospective/workflow.yaml\n" +
 			"Then follow its instructions, including:\n" +
-			"- _bmad/bmm/4-implementation/bmad-retrospective/workflow.md for the structured flow\n\n" +
+			"- _bmad/bmm/workflows/4-implementation/retrospective/instructions.md for detailed steps\n\n" +
 			"Run the retrospective in #YOLO mode.\n" +
 			"Assume the user will NOT provide any input.\n" +
 			"For ALL prompts that expect user input, make reasonable autonomous decisions based on:\n" +
@@ -1313,7 +1312,7 @@ func getSkillPrefix(agent string) string {
 	if agent == "codex" {
 		return "none"
 	}
-	return "bmad-"
+	return "/bmad-bmm-"
 }
 
 func detectCodexSession(session, capture string) string {

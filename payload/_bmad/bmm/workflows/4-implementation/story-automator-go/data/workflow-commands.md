@@ -8,7 +8,7 @@
 
 | Agent | CLI Command | Prompt Style |
 |-------|-------------|--------------|
-| **Claude** | `claude --dangerously-skip-permissions` | Command syntax: `/bmad-bmb-workflow` |
+| **Claude** | `claude --dangerously-skip-permissions` | Command syntax: `/bmad-bmm-workflow` |
 | **Codex** | `codex exec --full-auto` | Natural language prompt |
 
 **CRITICAL: Claude and Codex use DIFFERENT prompt styles:**
@@ -155,7 +155,7 @@ Story ID: STORY_ID" --full-auto
 
 | Agent | CLI Command | Prompt Style |
 |-------|-------------|--------------|
-| Claude | `claude --dangerously-skip-permissions` | `/bmad-bmb-workflow` command syntax |
+| Claude | `claude --dangerously-skip-permissions` | `/bmad-bmm-workflow` command syntax |
 | Codex | `codex exec --full-auto` | Natural language (see examples above) |
 
 `{projectPath}` = project root
