@@ -43,9 +43,17 @@ detect_platform() {
     *) err "Unsupported OS: $os (supported: Darwin, Linux)" ;;
   esac
 
+  if [ "$os" = "darwin" ] && [ "$arch" = "x86_64" ]; then
+    if command -v sysctl >/dev/null 2>&1; then
+      if [ "$(sysctl -in hw.optional.arm64 2>/dev/null || printf '0')" = "1" ]; then
+        arch="arm64"
+      fi
+    fi
+  fi
+
   case "$arch" in
-    x86_64) arch="amd64" ;;
-    arm64|aarch64) arch="arm64" ;;
+    x86_64|amd64) arch="amd64" ;;
+    arm64|arm64e|aarch64) arch="arm64" ;;
     *) err "Unsupported architecture: $arch (supported: amd64, arm64)" ;;
   esac
 
@@ -115,16 +123,31 @@ resolve_workflow_path() {
   return 1
 }
 
-ensure_command_if_missing() {
+ensure_command_current() {
   local file="$1"
   local name="$2"
   local description="$3"
   local workflow_path="$4"
+  local tmp action
+
+  tmp="$(mktemp "${TMPDIR:-/tmp}/story-automator-command.XXXXXX")"
+  write_claude_command "$tmp" "$name" "$description" "$workflow_path"
 
   if [ ! -f "$file" ]; then
-    write_claude_command "$file" "$name" "$description" "$workflow_path"
+    mv "$tmp" "$file"
+    chmod 0644 "$file"
     echo "Created command: ${file#$TARGET_ROOT/}"
+    return 0
   fi
+
+  if cmp -s "$tmp" "$file"; then
+    rm -f "$tmp"
+    return 0
+  fi
+
+  mv "$tmp" "$file"
+  chmod 0644 "$file"
+  echo "Updated command: ${file#$TARGET_ROOT/}"
 }
 
 if [ $# -ne 1 ]; then
@@ -197,32 +220,32 @@ write_claude_command \
   "Automate the build cycle for stories in an epic using T-Mux sessions with full resumability, smart parallelism, decision escalation, and automated retrospectives (tri-modal: create, validate, edit)" \
   "_bmad/bmm/workflows/4-implementation/story-automator-go/workflow.md"
 
-ensure_command_if_missing \
+ensure_command_current \
   "$TARGET_COMMANDS/bmad-bmm-create-story.md" \
   "create-story" \
   "Create the next user story from epics+stories with enhanced context analysis and direct ready-for-dev marking" \
   "$CREATE_STORY_PATH"
 
-ensure_command_if_missing \
+ensure_command_current \
   "$TARGET_COMMANDS/bmad-bmm-dev-story.md" \
   "dev-story" \
   "Execute a story by implementing tasks/subtasks, writing tests, validating, and updating the story file per acceptance criteria" \
   "$DEV_STORY_PATH"
 
-ensure_command_if_missing \
+ensure_command_current \
   "$TARGET_COMMANDS/bmad-bmm-story-automator-review.md" \
   "story-automator-review" \
   "Run the dedicated non-interactive review workflow used by story-automator-go sessions." \
   "_bmad/bmm/workflows/4-implementation/story-automator-review/workflow.yaml"
 
-ensure_command_if_missing \
+ensure_command_current \
   "$TARGET_COMMANDS/bmad-bmm-retrospective.md" \
   "retrospective" \
   "Run after epic completion to review overall success and capture lessons learned." \
   "$RETROSPECTIVE_PATH"
 
 if [ -n "$OPTIONAL_AUTOMATE_PATH" ]; then
-  ensure_command_if_missing \
+  ensure_command_current \
     "$TARGET_COMMANDS/bmad-tea-testarch-automate.md" \
     "testarch-automate" \
     "Expand test automation coverage after implementation or analyze existing codebase to generate comprehensive test suite" \
