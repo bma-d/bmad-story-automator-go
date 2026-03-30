@@ -32,6 +32,28 @@ resolve_abs_dir() {
   cd "$input" >/dev/null 2>&1 && pwd
 }
 
+detect_impl_layout() {
+  if [ -d "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation" ]; then
+    IMPL_ROOT="$TARGET_ROOT/_bmad/bmm/workflows/4-implementation"
+    IMPL_ROOT_REL="_bmad/bmm/workflows/4-implementation"
+    IMPL_LAYOUT="legacy"
+    STORY_DIR_NAME="story-automator-go"
+    STORY_REVIEW_DIR_NAME="story-automator-review"
+    return 0
+  fi
+
+  if [ -d "$TARGET_ROOT/_bmad/bmm/4-implementation" ]; then
+    IMPL_ROOT="$TARGET_ROOT/_bmad/bmm/4-implementation"
+    IMPL_ROOT_REL="_bmad/bmm/4-implementation"
+    IMPL_LAYOUT="current"
+    STORY_DIR_NAME="bmad-story-automator-go"
+    STORY_REVIEW_DIR_NAME="bmad-story-automator-review"
+    return 0
+  fi
+
+  err "Missing implementation workflows directory"
+}
+
 detect_platform() {
   local os arch
   os="$(uname -s)"
@@ -157,8 +179,6 @@ fi
 
 TARGET_ROOT="$(resolve_abs_dir "$1")"
 TARGET_BMAD="$TARGET_ROOT/_bmad"
-TARGET_WORKFLOW="$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/story-automator-go"
-TARGET_STORY_REVIEW="$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/story-automator-review"
 TARGET_COMMANDS="$TARGET_ROOT/.claude/commands"
 PLATFORM="$(detect_platform)"
 PAYLOAD_ROOT="$SCRIPT_DIR/payload"
@@ -167,7 +187,9 @@ STORY_REVIEW_PAYLOAD="$PAYLOAD_ROOT/_bmad/bmm/workflows/4-implementation/story-a
 SOURCE_BINARY="$SCRIPT_DIR/artifacts/story-automator/bin/$PLATFORM/story-automator"
 
 [ -d "$TARGET_BMAD" ] || err "Target is not a BMAD project: missing $TARGET_BMAD"
-[ -d "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation" ] || err "Missing implementation workflows directory"
+detect_impl_layout
+TARGET_WORKFLOW="$IMPL_ROOT/$STORY_DIR_NAME"
+TARGET_STORY_REVIEW="$IMPL_ROOT/$STORY_REVIEW_DIR_NAME"
 [ -d "$STORY_PAYLOAD" ] || err "Missing story-automator-go payload: $STORY_PAYLOAD"
 [ -d "$STORY_REVIEW_PAYLOAD" ] || err "Missing story-automator-review payload: $STORY_REVIEW_PAYLOAD"
 [ -f "$SOURCE_BINARY" ] || err "Missing packaged binary for $PLATFORM: $SOURCE_BINARY"
@@ -178,20 +200,40 @@ if [ -f "$TARGET_ROOT/_bmad/core/tasks/workflow.xml" ]; then
 fi
 
 CREATE_STORY_PATH="$(resolve_workflow_path \
+  "_bmad/bmm/4-implementation/bmad-create-story/workflow.md" \
+  "_bmad/bmm/4-implementation/create-story/workflow.md" \
+  "_bmad/bmm/4-implementation/bmad-create-story/workflow.yaml" \
+  "_bmad/bmm/4-implementation/create-story/workflow.yaml" \
   "_bmad/bmm/workflows/4-implementation/create-story/workflow.yaml" \
   "_bmad/bmm/workflows/4-implementation/create-story/workflow.md")" \
   || err "Required workflow missing: create-story"
 DEV_STORY_PATH="$(resolve_workflow_path \
+  "_bmad/bmm/4-implementation/bmad-dev-story/workflow.md" \
+  "_bmad/bmm/4-implementation/dev-story/workflow.md" \
+  "_bmad/bmm/4-implementation/bmad-dev-story/workflow.yaml" \
+  "_bmad/bmm/4-implementation/dev-story/workflow.yaml" \
   "_bmad/bmm/workflows/4-implementation/dev-story/workflow.yaml" \
   "_bmad/bmm/workflows/4-implementation/dev-story/workflow.md")" \
   || err "Required workflow missing: dev-story"
 RETROSPECTIVE_PATH="$(resolve_workflow_path \
+  "_bmad/bmm/4-implementation/bmad-retrospective/workflow.md" \
+  "_bmad/bmm/4-implementation/retrospective/workflow.md" \
+  "_bmad/bmm/4-implementation/bmad-retrospective/workflow.yaml" \
+  "_bmad/bmm/4-implementation/retrospective/workflow.yaml" \
   "_bmad/bmm/workflows/4-implementation/retrospective/workflow.yaml" \
   "_bmad/bmm/workflows/4-implementation/retrospective/workflow.md")" \
   || err "Required workflow missing: retrospective"
 
 OPTIONAL_AUTOMATE_PATH=""
 if OPTIONAL_AUTOMATE_PATH="$(resolve_workflow_path \
+  "_bmad/tea/4-implementation/bmad-testarch-automate/workflow.md" \
+  "_bmad/tea/4-implementation/testarch-automate/workflow.md" \
+  "_bmad/tea/4-implementation/bmad-testarch-automate/workflow.yaml" \
+  "_bmad/tea/4-implementation/testarch-automate/workflow.yaml" \
+  "_bmad/bmm/4-implementation/bmad-testarch-automate/workflow.md" \
+  "_bmad/bmm/4-implementation/testarch-automate/workflow.md" \
+  "_bmad/bmm/4-implementation/bmad-testarch-automate/workflow.yaml" \
+  "_bmad/bmm/4-implementation/testarch-automate/workflow.yaml" \
   "_bmad/tea/workflows/testarch/automate/workflow.yaml" \
   "_bmad/tea/workflows/testarch/automate/workflow.md" \
   "_bmad/bmm/workflows/testarch/automate/workflow.yaml" \
@@ -204,8 +246,9 @@ fi
 backup_if_exists "$TARGET_WORKFLOW"
 backup_if_exists "$TARGET_STORY_REVIEW"
 
-cp -a "$STORY_PAYLOAD" "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/"
-cp -a "$STORY_REVIEW_PAYLOAD" "$TARGET_ROOT/_bmad/bmm/workflows/4-implementation/"
+mkdir -p "$TARGET_WORKFLOW" "$TARGET_STORY_REVIEW"
+cp -a "$STORY_PAYLOAD"/. "$TARGET_WORKFLOW"/
+cp -a "$STORY_REVIEW_PAYLOAD"/. "$TARGET_STORY_REVIEW"/
 cp -a "$SCRIPT_DIR/README.md" "$TARGET_WORKFLOW/README.md"
 
 mkdir -p "$TARGET_WORKFLOW/bin"
@@ -218,7 +261,7 @@ write_claude_command \
   "$TARGET_COMMANDS/bmad-bmm-story-automator-go.md" \
   "story-automator-go" \
   "Automate the build cycle for stories in an epic using T-Mux sessions with full resumability, smart parallelism, decision escalation, and automated retrospectives (tri-modal: create, validate, edit)" \
-  "_bmad/bmm/workflows/4-implementation/story-automator-go/workflow.md"
+  "$IMPL_ROOT_REL/$STORY_DIR_NAME/workflow.md"
 
 ensure_command_current \
   "$TARGET_COMMANDS/bmad-bmm-create-story.md" \
@@ -236,7 +279,7 @@ ensure_command_current \
   "$TARGET_COMMANDS/bmad-bmm-story-automator-review.md" \
   "story-automator-review" \
   "Run the dedicated non-interactive review workflow used by story-automator-go sessions." \
-  "_bmad/bmm/workflows/4-implementation/story-automator-review/workflow.yaml"
+  "$IMPL_ROOT_REL/$STORY_REVIEW_DIR_NAME/workflow.yaml"
 
 ensure_command_current \
   "$TARGET_COMMANDS/bmad-bmm-retrospective.md" \
@@ -255,5 +298,6 @@ fi
 echo "Installed story-automator-go into: $TARGET_WORKFLOW"
 echo "Installed bundled story-automator-review into: $TARGET_STORY_REVIEW"
 echo "Installed binary: $PLATFORM"
+echo "Implementation layout: $IMPL_LAYOUT"
 echo "Command mode: $COMMAND_MODE"
 echo "Installed Claude command: $TARGET_COMMANDS/bmad-bmm-story-automator-go.md"

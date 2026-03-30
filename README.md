@@ -58,6 +58,8 @@ This repo packages the installable workflow payload plus the Go program source f
 This bundle supports:
 - Claude
 - Codex
+- current BMAD layout: `_bmad/bmm/4-implementation/...`
+- legacy BMAD layout: `_bmad/bmm/workflows/4-implementation/...`
 
 This bundle does not support:
 - other agent CLIs
@@ -184,9 +186,13 @@ The practical shape is:
 
 ## What Gets Installed
 
-The installer copies bundled payload into the target project:
-- `_bmad/bmm/workflows/4-implementation/story-automator-go`
-- `_bmad/bmm/workflows/4-implementation/story-automator-review`
+The installer detects the target BMAD layout and installs into the matching path:
+- current BMAD:
+  - `_bmad/bmm/4-implementation/bmad-story-automator-go`
+  - `_bmad/bmm/4-implementation/bmad-story-automator-review`
+- legacy BMAD:
+  - `_bmad/bmm/workflows/4-implementation/story-automator-go`
+  - `_bmad/bmm/workflows/4-implementation/story-automator-review`
 
 It also:
 - installs the correct platform binary as `bin/story-automator`
@@ -233,8 +239,10 @@ Manual checks inside a target project:
 
 ```bash
 cd /path/to/project
-_bmad/bmm/workflows/4-implementation/story-automator-go/scripts/derive-project-slug.sh
-grep -n "0 CRITICAL issues remain after fixes" _bmad/bmm/workflows/4-implementation/story-automator-review/instructions.xml
+story_dir=$(find _bmad/bmm -maxdepth 3 -type d \( -name 'bmad-story-automator-go' -o -name 'story-automator-go' \) | head -n 1)
+review_dir=$(find _bmad/bmm -maxdepth 3 -type d \( -name 'bmad-story-automator-review' -o -name 'story-automator-review' \) | head -n 1)
+"$story_dir/scripts/derive-project-slug.sh"
+grep -n "0 CRITICAL issues remain after fixes" "$review_dir/instructions.xml"
 ```
 
 Expected:
